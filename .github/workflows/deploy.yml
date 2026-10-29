@@ -1,0 +1,43 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://me.axiavo.com
+    steps:
+      - name: Checkout
+        # actions/checkout v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Install, build, and upload site
+        # withastro/action v6
+        uses: withastro/action@a8b97df764791eb61fbf3338ef713b0e61ae05c5
+        with:
+          node-version: 24
+          build-cmd: npm run check && npm run build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        # actions/deploy-pages v5
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346
