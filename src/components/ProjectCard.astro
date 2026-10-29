@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  /** 首页重点卡片：展示基于 flowSteps 短标签的流程示意。 */
+  showFlow?: boolean;
+}
+
+const { project, showFlow = false } = Astro.props;
+const { title, subtitle, category, summary, flowSteps } = project.data;
+const stepNames = flowSteps.map((step) => step.split('：')[0]);
+---
+
+<article class="card">
+  <p class="kicker">{category}</p>
+  <h3><a href={`/projects/${project.id}/`}>{title}</a></h3>
+  <p class="tagline" style="font-size: 0.86rem; color: var(--ink);">{subtitle}</p>
+  <p>{summary}</p>
+  {
+    showFlow && stepNames.length > 0 && (
+      <div class="card-flow">
+        <p class="card-flow-cap">流程示意</p>
+        <ol>
+          {stepNames.map((name) => (
+            <li>{name}</li>
+          ))}
+        </ol>
+      </div>
+    )
+  }
+  <p class="card-foot">{project.data.status}</p>
+</article>

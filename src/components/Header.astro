@@ -1,0 +1,43 @@
+---
+import { profile } from '../data/profile';
+
+interface Props {
+  currentPath: string;
+}
+
+const { currentPath } = Astro.props;
+
+const navItems = [
+  { href: '/', label: '首页', match: '/' },
+  { href: '/projects/', label: '项目', match: '/projects' },
+  { href: '/notes/', label: '记录', match: '/notes' },
+  { href: '/about/', label: '关于', match: '/about' },
+];
+
+const isActive = (match: string) =>
+  match === '/' ? currentPath === '/' : currentPath.startsWith(match);
+---
+
+<header class="site-header">
+  <div class="wrap">
+    <p class="site-title">
+      <a href="/">{profile.displayName}<span class="en">TEST&nbsp;ENGINEERING</span></a>
+    </p>
+    <nav class="site-nav" id="site-nav" aria-label="主导航">
+      <ul>
+        {
+          navItems.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                {...(isActive(item.match) ? { 'aria-current': 'page' } : {})}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+  </div>
+</header>

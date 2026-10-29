@@ -1,0 +1,28 @@
+---
+interface Props {
+  steps: string[];
+  caption?: string;
+}
+
+const { steps, caption = 'PROCESS DIAGRAM' } = Astro.props;
+const labels = ['01', '02', '03', '04', '05', '06'];
+---
+
+<div class="flow-panel">
+  <p class="flow-caption">{caption} · 流程示意</p>
+  <ol class="flow-steps">
+    {
+      steps.map((step, i) => {
+        const [name, ...rest] = step.split('：');
+        const desc = rest.join('：');
+        return (
+          <li class="flow-step">
+            <span class="num">{labels[i]}</span>
+            <span class="name">{name}</span>
+            {desc && <span class="desc">{desc}</span>}
+          </li>
+        );
+      })
+    }
+  </ol>
+</div>

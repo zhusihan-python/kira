@@ -1,0 +1,89 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const notes = await getCollection('notes');
+  return notes.map((note) => ({
+    params: { slug: note.id },
+    props: { note },
+  }));
+}
+
+interface Props {
+  note: CollectionEntry<'notes'>;
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+
+const projects = await getCollection('projects');
+const project = projects.find((p) => p.id === note.data.relatedProject);
+
+// Headings from markdown body; Astro (rehype-slug) gives them matching ids.
+const toc = (note.body ?? '')
+  .split('\n')
+  .filter((line) => line.startsWith('## '))
+  .map((line) => {
+    const text = line.replace(/^##\s+/, '').trim();
+    return { text, id: text.toLowerCase().replace(/\s+/g, '-') };
+  });
+---
+
+<BaseLayout
+  title={`${note.data.title} · 实践记录`}
+  description={note.data.summary}
+  path={`/notes/${note.id}`}
+  ogType="article"
+>
+  <section class="wrap">
+    <a class="back-link" href="/notes/">← 全部记录</a>
+    <header style="max-width: var(--measure);">
+      <p class="kicker">NOTE · {note.data.date}</p>
+      <h1>{note.data.title}</h1>
+      <p class="lead">{note.data.summary}</p>
+      <p class="meta-row">
+        <span class="dt">验证记录日期</span><span>{note.data.date}</span>
+        <span class="dt">PROJECT</span>
+        {
+          project ? (
+            <span>
+              <a href={`/projects/${project.id}/`}>{project.data.title}</a>
+            </span>
+          ) : (
+            <span>{note.data.relatedProject}</span>
+          )
+        }
+      </p>
+      <p class="meta-row">
+        <span class="dt">SOURCE</span><span>{note.data.sourceNote}</span>
+      </p>
+    </header>
+
+    <div class="article-layout" style="margin-top: 2.5rem;">
+      <article class="prose">
+        <Content />
+        {
+          project && (
+            <p style="margin-top: 3rem; border-top: 1px solid var(--line); padding-top: 1.25rem;">
+              本文关联项目：<a href={`/projects/${project.id}/`}>{project.data.title} —— {project.data.subtitle}</a>
+            </p>
+          )
+        }
+      </article>
+      <nav class="toc" aria-label="目录">
+        <h2>目录 / TOC</h2>
+        <ul>
+          {
+            toc.map((item) => (
+              <li>
+                <a href={`#${item.id}`}>{item.text}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </section>
+</BaseLayout>

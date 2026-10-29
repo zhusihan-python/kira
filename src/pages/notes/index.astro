@@ -1,0 +1,42 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const notes = (await getCollection('notes')).sort((a, b) => b.data.date.localeCompare(a.data.date));
+const projects = await getCollection('projects');
+const projectTitle = (id: string) => projects.find((p) => p.id === id)?.data.title ?? id;
+---
+
+<BaseLayout
+  title="实践记录"
+  description="真实证据整理的实践记录：执行器崩溃分类的定位与修复、Android 真机控制可靠性的验证口径。"
+  path="/notes"
+>
+  <section class="wrap">
+    <header style="padding: 3.25rem 0 0;">
+      <p class="kicker">NOTES</p>
+      <h1>实践记录</h1>
+      <p class="lead">
+        基于项目真实证据整理的记录：发生了什么、怎么定位、怎么修、怎么验，以及结论适用的范围。
+      </p>
+    </header>
+    <ul class="note-list" style="margin-top: 2rem;">
+      {
+        notes.map((note) => (
+          <li>
+            <p class="kicker" style="margin-bottom: 0.25rem;">
+              {note.data.date} · 关联项目：{projectTitle(note.data.relatedProject)}
+            </p>
+            <h3><a href={`/notes/${note.id}/`}>{note.data.title}</a></h3>
+            <p style="color: var(--ink-soft); max-width: var(--measure); margin: 0.25rem 0 0.5rem;">
+              {note.data.summary}
+            </p>
+            <p class="meta-row">
+              <span>{note.data.sourceNote}</span>
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</BaseLayout>

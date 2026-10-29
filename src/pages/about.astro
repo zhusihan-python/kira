@@ -1,0 +1,82 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { profile } from '../data/profile';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<BaseLayout
+  title="关于"
+  description={`${profile.role}${profile.displayName}：工作方向、分析方法与验证习惯，以及通过 GitHub 联系的方式。`}
+  path="/about"
+>
+  <section class="wrap">
+    <header style="padding: 3.25rem 0 0;">
+      <p class="kicker">ABOUT</p>
+      <h1>关于</h1>
+      <p class="lead">
+        我是 {profile.displayName}，{profile.role}，兼具后端与上位机软件开发经验。这里记录我的技术方向、工作经历与分析问题的方法。
+      </p>
+    </header>
+
+    <div class="article-layout" style="margin-top: 2.5rem;">
+      <div class="prose">
+        <h2>方向</h2>
+        <p>
+          我的个人项目与技术实践围绕三条线展开：<strong>测试平台</strong>（执行调度、设备资源管理、故障恢复）、<strong>GUI
+          Agent 评测</strong>（执行计划、版本配对比较、质量门禁）和<strong>性能采集</strong>（指标口径、生命周期正确性、拒绝不可信数据）。
+        </p>
+
+        <h2>工作方法</h2>
+        <ul>
+          <li><strong>先复现，再修复。</strong>写一个会失败的测试把问题固定住，修完它转正为回归。</li>
+          <li><strong>修复要连链路验证。</strong>不只改返回值——落库、事件、聚合、重试这些下游语义一起复验。</li>
+          <li><strong>数字必须带口径。</strong>测量从哪里开始、到哪里结束、分母是什么、条件是什么，都写进结论。</li>
+          <li><strong>说不清就拒绝输出。</strong>性能指标在 PID 复用、计数回退这类场景下宁可没有数，也不要一个看起来合理的错数。</li>
+          <li><strong>写清边界。</strong>哪些是上游/他人的工作，哪些是我的；什么是已验证的，什么只是设计。</li>
+        </ul>
+
+        <h2>项目速览</h2>
+        <ul>
+          {
+            projects.map((p) => (
+              <li>
+                <a href={`/projects/${p.id}/`}>{p.data.title}</a>
+                —— {p.data.subtitle}
+              </li>
+            ))
+          }
+        </ul>
+
+        {
+          profile.experience.length > 0 && (
+            <>
+              <h2>工作经历</h2>
+              <ul>
+                {profile.experience.map((e) => (
+                  <li>
+                    <strong>{e.role}</strong> · {e.org} · {e.period}
+                    <br />
+                    {e.detail}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )
+        }
+
+        <h2>联系</h2>
+        <p>
+          代码与记录主要在 GitHub：<a href={profile.github} rel="me noopener"
+            >{profile.github.replace('https://', '')}</a
+          >。MobileGym 扩展为公开仓库，欢迎查看；其他项目以本站的记录为准。
+        </p>
+        <div class="cta-row">
+          <a class="button primary" href={profile.github} rel="me noopener">GitHub 主页</a>
+          <a class="button ghost" href="/projects/">查看项目</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

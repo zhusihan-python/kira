@@ -1,0 +1,72 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+const categories = ['全部', '测试平台', '产品实践', '性能研究'] as const;
+---
+
+<BaseLayout
+  title="项目"
+  description="四个个人项目：MobileGym 测试与评测平台、TestHub Android 自动化与可靠性工程、MindForge 学习产品、PerfCat 性能采集研究。"
+  path="/projects"
+>
+  <section class="wrap">
+    <header style="padding: 3.25rem 0 0;">
+      <p class="kicker">PROJECTS</p>
+      <h1>项目</h1>
+      <p class="lead">
+        从测试平台到产品实践与性能研究。每个项目都说明上游基础、我的工作范围与验证方式。
+      </p>
+    </header>
+
+    <div class="filter-bar" role="group" aria-label="按类别筛选项目" style="margin-top: 2.25rem;">
+      {
+        categories.map((cat, i) => (
+          <button
+            type="button"
+            class="filter-btn"
+            data-filter={cat}
+            aria-pressed={i === 0 ? 'true' : 'false'}
+          >
+            {cat}
+          </button>
+        ))
+      }
+    </div>
+
+    <div class="card-grid card-grid--two" data-project-grid>
+      {
+        projects.map((project) => (
+          <div data-category={project.data.category}>
+            <ProjectCard project={project} />
+          </div>
+        ))
+      }
+    </div>
+
+    <p data-empty-note role="status" hidden>该类别下暂无项目。</p>
+  </section>
+</BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-filter]');
+  const items = document.querySelectorAll<HTMLElement>('[data-category]');
+  const emptyNote = document.querySelector<HTMLElement>('[data-empty-note]');
+
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter ?? '全部';
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+      let visible = 0;
+      items.forEach((item) => {
+        const show = filter === '全部' || item.dataset.category === filter;
+        item.hidden = !show;
+        if (show) visible += 1;
+      });
+      if (emptyNote) emptyNote.hidden = visible > 0;
+    });
+  });
+</script>

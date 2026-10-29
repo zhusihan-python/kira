@@ -1,0 +1,130 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { profile } from '../data/profile';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const featured = projects.filter((p) => p.data.featured);
+const extra = projects.filter((p) => !p.data.featured);
+const notes = (await getCollection('notes')).sort((a, b) => b.data.date.localeCompare(a.data.date));
+const crashNote = notes.find((n) => n.id === 'executor-crash-classification') ?? notes[0];
+---
+
+<BaseLayout
+  title={`${profile.siteName} · ${profile.role}作品集`}
+  description="以个人项目为核心的测试开发工程师作品集：测试平台、GUI Agent 评测与性能采集，记录构建工具、定位问题和验证结果的过程。"
+  path="/"
+>
+  <section class="hero wrap">
+    <p class="kicker">TEST ENGINEERING · PORTFOLIO</p>
+    <h1>把问题拆清楚，<br />把结果验证明白。</h1>
+    <p class="lead">
+      我是 {profile.displayName}，{profile.role}。我在测试平台、GUI Agent
+      评测与性能采集中，记录构建工具、定位问题和验证结果的过程——这个站点就是这些记录的入口。
+    </p>
+    <p class="en-line">BUILD THE TOOL · ISOLATE THE PROBLEM · PROVE THE RESULT</p>
+    <div class="cta-row">
+      <a class="button primary" href="/projects/">查看项目</a>
+      <a class="button ghost" href="/about/">了解我的方法</a>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <span class="index">01</span>
+      <h2>重点项目</h2>
+      <a class="more" href="/projects/">全部项目 →</a>
+    </div>
+    <div class="featured-grid">
+      {featured.map((project) => <ProjectCard project={project} showFlow />)}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <span class="index">02</span>
+      <h2>如何分析与验证</h2>
+      <a class="more" href="/notes/executor-crash-classification/">完整记录 →</a>
+    </div>
+    <div class="article-layout">
+      <div class="prose">
+        <p>
+          以一次真实缺陷为例：MobileGym 多进程执行后，一个分片"缺失结果"，落库出现结果类型与错误码不一致的矛盾组合——
+          <code>outcome=FAIL</code> 说测试失败，<code>error_code=WORKER_CRASH</code> 说执行器崩溃。执行器明明崩溃了，为什么结果类型被落成测试失败？
+        </p>
+        <p>
+          我的做法是：先写一个会失败的测试复现问题，定位到非取消场景的返回被错误缩进到取消分支的
+          return 之后而不可达，缺失结果以 None 进入落库，同时又套用了 WORKER_CRASH 错误码；把这个返回移回可达的默认路径、落库修正为
+          <code>ERROR / WORKER_CRASH</code>
+          后，再验证 SQLite 落库、终态事件、报告聚合、重试选择四条链路语义一致，并保留取消语义。
+        </p>
+        <p>
+          修复于 2026-07-11 完成验证并留下公开 evidence 文档——结论可回溯，而不是"改了应该就好了"。
+        </p>
+      </div>
+      <aside aria-label="案例步骤">
+        <div class="flow-panel">
+          <p class="flow-caption">CASE · 分析路径</p>
+          <ol class="flow-steps flow-steps--stack">
+            <li class="flow-step"><span class="num">01</span><span class="name">现象</span><span class="desc">结果类型与错误码不一致：FAIL 对 WORKER_CRASH</span></li>
+            <li class="flow-step"><span class="num">02</span><span class="name">复现</span><span class="desc">写一个会失败的测试固定问题</span></li>
+            <li class="flow-step"><span class="num">03</span><span class="name">修复</span><span class="desc">崩溃归类 ERROR，测试失败才归 FAIL</span></li>
+            <li class="flow-step"><span class="num">04</span><span class="name">回归</span><span class="desc">四条链路复验，evidence 留档</span></li>
+          </ol>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <span class="index">03</span>
+      <h2>更多作品</h2>
+    </div>
+    <div class="card-grid">
+      {extra.map((project) => <ProjectCard project={project} />)}
+    </div>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <span class="index">04</span>
+      <h2>实践记录</h2>
+      <a class="more" href="/notes/">全部记录 →</a>
+    </div>
+    <ul class="note-list">
+      {
+        notes.map((note) => (
+          <li>
+            <p class="kicker" style="margin-bottom: 0.25rem;">
+              验证记录日期 {note.data.date} · {note.data.sourceNote}
+            </p>
+            <h3><a href={`/notes/${note.id}/`}>{note.data.title}</a></h3>
+            <p style="color: var(--ink-soft); max-width: var(--measure); margin: 0.25rem 0 0;">
+              {note.data.summary}
+            </p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <section class="section wrap">
+    <div class="section-head">
+      <span class="index">05</span>
+      <h2>联系</h2>
+    </div>
+    <div class="prose">
+      <p>
+        我的代码和记录都在 GitHub 上：<a href={profile.github} rel="me noopener"
+          >{profile.github.replace('https://', '')}</a
+        >。其中 MobileGym 扩展为公开仓库，其他项目以本站的记录为准。
+      </p>
+      <div class="cta-row">
+        <a class="button primary" href={profile.github} rel="me noopener">GitHub 主页</a>
+        <a class="button ghost" href={`/notes/${crashNote.id}/`}>读一篇记录</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

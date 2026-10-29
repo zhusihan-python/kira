@@ -1,0 +1,96 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import FlowDiagram from '../../components/FlowDiagram.astro';
+
+export async function getStaticPaths() {
+  const projects = await getCollection('projects');
+  return projects.map((project) => ({
+    params: { slug: project.id },
+    props: { project },
+  }));
+}
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+const notes = (await getCollection('notes'))
+  .filter((n) => n.data.relatedProject === project.id)
+  .sort((a, b) => b.data.date.localeCompare(a.data.date));
+
+const { title, subtitle, category, projectType, status, summary, highlights, flowSteps, repository, publicSource, links } =
+  project.data;
+---
+
+<BaseLayout title={`${title} · 项目`} description={summary} path={`/projects/${project.id}`}>
+  <section class="wrap project-hero">
+    <a class="back-link" href="/projects/">← 全部项目</a>
+    <p class="kicker">{projectType} · {category}</p>
+    <h1>{title}</h1>
+    <p class="lead" style="font-size: 1.15rem; color: var(--ink);">{subtitle}</p>
+    <p class="meta-row">
+      <span class="dt">STATUS</span><span>{status}</span>
+      <span class="dt">REPO</span>
+      <span>{publicSource ? '公开（GitHub）' : '私有（仅记录）'}</span>
+    </p>
+    {flowSteps.length > 0 && <FlowDiagram steps={flowSteps} />}
+  </section>
+
+  <div class="wrap project-body-grid">
+    <article class="prose">
+      <p style="font-size: 1.05rem;">{summary}</p>
+      <h2>概要</h2>
+      <Content />
+      {
+        notes.length > 0 && (
+          <>
+            <h2>相关实践记录</h2>
+            <ul>
+              {notes.map((note) => (
+                <li>
+                  <a href={`/notes/${note.id}/`}>{note.data.title}</a>
+                  <span style="color: var(--muted);"> · {note.data.date}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+    </article>
+
+    <aside class="project-side" aria-label="项目要点">
+      <h2>要点 / KEY POINTS</h2>
+      <ul>
+        {highlights.map((h) => <li>{h}</li>)}
+      </ul>
+      <h2>来源 / SOURCE</h2>
+      <ul>
+        {
+          publicSource && repository ? (
+            <li>
+              <a href={repository} rel="noopener">公开仓库</a>
+            </li>
+          ) : (
+            <li>私有项目，页面仅记录方法与结论</li>
+          )
+        }
+        {
+          links.map((link) => (
+            <li>
+              <a href={link.href} rel="noopener">{link.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="evidence-box" style="margin-top: 1.25rem;">
+        <p style="margin: 0; font-size: 0.82rem;">
+          本页内容基于项目实际整理；图为流程示意，非运行截图或遥测数据。
+        </p>
+      </div>
+    </aside>
+  </div>
+</BaseLayout>

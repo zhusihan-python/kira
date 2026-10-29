@@ -1,0 +1,20 @@
+---
+import { profile } from '../data/profile';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div>
+      <a href={profile.github} rel="me noopener">GitHub · {profile.displayName}</a>
+    </div>
+    <div class="meta">
+      <span>© {year}</span>
+      <span aria-hidden="true">/</span>
+      <a href="/rss.xml">RSS</a>
+      <span aria-hidden="true">/</span>
+      <a href="/sitemap.xml">SITEMAP</a>
+    </div>
+  </div>
+</footer>
