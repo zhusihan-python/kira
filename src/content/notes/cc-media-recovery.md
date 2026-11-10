@@ -41,7 +41,22 @@ summary: 能读出时长不等于能播放，导出成功也不等于每个包�
 
 最初用 C 在 CPU 上并行计算，并复用各候选共有的计算。后来用 Metal 把大批独立任务交给 GPU，CPU 同时处理剩余的小块。两边领取互不重叠的范围，共用一份进度记录，方便中断后继续。
 
-最后一轮把 GPU 循环里重复的索引计算整理成固定周期，并将 CPU 并发从 14 调到 4。同一台机器、同一扫描范围内，吞吐从每秒 5.52 亿提高到 6.76 亿候选值，约快 22.5%，命中结果一致。这是两项改动一起测出的收益。
+**GPU 少算了什么？** 原来循环每走一步，都要重新计算下一份数据从哪里取。访问顺序其实会周期性重复，把循环按固定周期整理后，编译器就可以提前排好一组内的访问顺序，减少运行时重复算位置的开销。每个候选都要走这段循环，单次省下的工作累积起来，就能影响整体吞吐。
+
+同一轮还把 CPU 并发从 14 调到 4，重新平衡 CPU 和 GPU 的分工。下面是同一台机器、同一扫描范围的复测结果，命中结果一致。**约 22.5% 是两项改动的合计提升**，测试没有分别测量各自的贡献。
+
+<figure class="gpu-benchmark">
+  <figcaption><strong>吞吐对比</strong> <span>亿候选值/秒</span></figcaption>
+  <div class="gpu-benchmark-row">
+    <span>优化前</span><strong>5.52</strong>
+    <div class="gpu-benchmark-track" aria-hidden="true"><div class="gpu-benchmark-bar" style="width: 78.86%"></div></div>
+  </div>
+  <div class="gpu-benchmark-row">
+    <span>两项一起优化后</span><strong>6.76</strong>
+    <div class="gpu-benchmark-track" aria-hidden="true"><div class="gpu-benchmark-bar gpu-benchmark-bar-after" style="width: 96.57%"></div></div>
+  </div>
+  <div class="gpu-benchmark-scale" aria-hidden="true"><span>0</span><span>7</span></div>
+</figure>
 
 ## 全片解码验收
 
