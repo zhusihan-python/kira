@@ -10,6 +10,32 @@ summary: 能读出时长不等于能播放，导出成功也不等于每个包�
 
 这批 `.cc` 文件保留了可读的 MP4 索引。索引在 `moov` 里，像目录一样记录音视频包的位置、大小和时间。真正的媒体数据在 `mdat` 里，音视频包仍是密文。播放器能读出时长和编码格式，改后缀却播不了。
 
+<figure class="media-structure">
+  <figcaption><strong>.cc 容器</strong> · 目录、区段与媒体包</figcaption>
+  <div class="media-structure-box media-structure-index">
+    <strong>moov · 可读索引</strong>
+    <span>包位置、大小、时间和编码信息</span>
+  </div>
+  <div class="media-structure-connector">↓ 用索引定位媒体包</div>
+  <div class="media-structure-box">
+    <strong>mdat · 媒体数据</strong>
+    <div class="media-structure-segments">
+      <span>区段 A</span>
+      <span class="media-structure-selected">区段 B</span>
+      <span>区段 C</span>
+    </div>
+    <div class="media-structure-connector">↓ 放大区段 B</div>
+    <div class="media-structure-packets">
+      <strong>加密的核心 · 每个媒体包的内容</strong>
+      <div class="media-structure-packet-row">
+        <span>视频包 · 密文</span>
+        <span>音频包 · 密文</span>
+      </div>
+    </div>
+  </div>
+  <small>示意图。A、B、C 表示按播放参数划分的逻辑区段，方框位置和大小仅用于说明关系。</small>
+</figure>
+
 这批样本有两个层次。**区段**决定一组媒体包用哪一组解密参数，跨到下一段时参数会切换。**媒体包**才是播放器实际处理的单位，SzPlayer 在区段内逐包解密视频和音频。同一段里的画面和声音都要恢复，才有可播放的内容。
 
 起初只凭扩展名和字节分布猜过 EVPlayer 和 AES。确认 SzPlayer 能正常播放后，才顺着它的媒体处理路径找到证据，并用独立模型验证这批样本确实按包做 RC4 处理。

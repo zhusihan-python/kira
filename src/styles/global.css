@@ -766,12 +766,83 @@ h3 {
   }
 }
 
+.media-structure,
 .media-demo {
   margin: 1.5rem 0;
   padding: 0.85rem;
   border: 1px solid var(--line);
   border-radius: 0.5rem;
   background: var(--paper-soft);
+}
+
+.media-structure figcaption {
+  margin-bottom: 0.7rem;
+}
+
+.media-structure-box {
+  padding: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0.35rem;
+  background: var(--paper);
+}
+
+.media-structure-index {
+  background: var(--accent-wash);
+}
+
+.media-structure-index span,
+.media-structure small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
+.media-structure-connector {
+  margin-block: 0.4rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.media-structure-segments,
+.media-structure-packet-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+}
+
+.media-structure-packet-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.media-structure-segments span,
+.media-structure-packet-row span {
+  padding: 0.3rem 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.media-structure-segments .media-structure-selected,
+.media-structure-packets {
+  border: 1px solid #a16c3b;
+  border-radius: 0.35rem;
+  background: #f8e8d8;
+}
+
+.media-structure-packets {
+  padding: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.media-structure-packet-row span {
+  background: var(--paper);
+}
+
+.media-structure small {
+  margin-top: 0.6rem;
 }
 
 .media-demo figcaption {
