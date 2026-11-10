@@ -87,3 +87,53 @@ const toc = (note.body ?? '')
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const steps = [
+    {
+      caption: '缓存命中：先恢复 A 和 C，B 留待补齐。',
+      statuses: ['缓存命中', '缺段', '缓存命中'],
+      active: [0, 2],
+    },
+    {
+      caption: '补齐缺段：单独恢复 B，A 和 C 已就绪。',
+      statuses: ['已就绪', '补齐中', '已就绪'],
+      active: [1],
+    },
+    {
+      caption: '最终导出：把 A、B、C 按顺序封装成一个 MP4。',
+      statuses: ['参与导出', '参与导出', '参与导出'],
+      active: [0, 1, 2],
+    },
+  ];
+
+  const demo = document.querySelector('.media-demo');
+  const caption = demo?.querySelector('[data-media-caption]');
+  const statuses = demo?.querySelectorAll('[data-media-status]');
+  const controls = demo?.querySelector<HTMLElement>('.media-demo-controls');
+  const previous = controls?.querySelector('[data-media-previous]');
+  const next = controls?.querySelector('[data-media-next]');
+
+  if (caption && statuses && controls && previous && next) {
+    let current = 0;
+
+    const move = (direction: number) => {
+      const target = current + direction;
+      if (target < 0 || target >= steps.length) return;
+
+      current = target;
+      const step = steps[current];
+      caption.textContent = `${current + 1} / ${steps.length} · ${step.caption}`;
+      statuses.forEach((status, index) => {
+        status.textContent = step.statuses[index];
+        status.parentElement?.classList.toggle('media-demo-active', step.active.includes(index));
+      });
+      previous.setAttribute('aria-disabled', String(current === 0));
+      next.setAttribute('aria-disabled', String(current === steps.length - 1));
+    };
+
+    previous.addEventListener('click', () => move(-1));
+    next.addEventListener('click', () => move(1));
+    controls.hidden = false;
+  }
+</script>

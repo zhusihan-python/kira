@@ -16,36 +16,20 @@ summary: 能读出时长不等于能播放，导出成功也不等于每个包�
 
 ## 三步看懂恢复过程
 
-下面用三个虚构区段做演示。展开每一步，看看哪些信息已经可用，还有哪些工作要做。
+用三个虚构区段演示。先恢复缓存命中的 A 和 C，再补齐 B，最后把三段一起导出。
 
-<div class="media-demo">
-  <details open>
-    <summary>① 看文件结构</summary>
-    <div class="media-demo-row">
-      <span class="media-demo-ready"><strong>moov · 目录</strong>位置、大小、时间可读</span>
-      <span><strong>mdat · 媒体数据</strong>视频包和音频包仍加密</span>
-    </div>
-    <p>知道每个包在哪里，还得恢复包里的内容才能播放。</p>
-  </details>
-  <details>
-    <summary>② 看区段覆盖</summary>
-    <div class="media-demo-row">
-      <span class="media-demo-ready"><strong>区段 A</strong>缓存可用</span>
-      <span><strong>区段 B</strong>待离线恢复</span>
-      <span class="media-demo-ready"><strong>区段 C</strong>缓存可用</span>
-    </div>
-    <p>先恢复缓存覆盖的 A 和 C，再集中处理缺失的 B。区段用各自的参数，段内按包处理。</p>
-  </details>
-  <details>
-    <summary>③ 看封装和验收</summary>
-    <ol class="media-demo-row">
-      <li><strong>恢复音视频包</strong><br>H.264 + AAC</li>
-      <li><strong>封装为 MP4</strong><br>保留原有编码</li>
-      <li class="media-demo-ready"><strong>全片验证</strong><br>包数、时长、解码日志</li>
-    </ol>
-    <p>文件能打开，只说明播放器读得懂封装。还要实际解码，才能发现中途的坏包。</p>
-  </details>
-</div>
+<figure class="media-demo">
+  <figcaption data-media-caption aria-live="polite">1 / 3 · 缓存命中：先恢复 A 和 C，B 留待补齐。</figcaption>
+  <div class="media-demo-row">
+    <span class="media-demo-active"><strong>区段 A</strong><span data-media-status>缓存命中</span></span>
+    <span><strong>区段 B</strong><span data-media-status>缺段</span></span>
+    <span class="media-demo-active"><strong>区段 C</strong><span data-media-status>缓存命中</span></span>
+  </div>
+  <div class="media-demo-controls" hidden>
+    <button type="button" data-media-previous aria-disabled="true">上一步</button>
+    <button type="button" data-media-next aria-disabled="false">下一步</button>
+  </div>
+</figure>
 
 ## 缓存和离线恢复
 
