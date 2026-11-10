@@ -67,22 +67,36 @@ summary: 能读出时长不等于能播放，导出成功也不等于每个包�
 
 最初用 C 在 CPU 上并行计算，并复用各候选共有的计算。后来用 Metal 把大批独立任务交给 GPU，CPU 同时处理剩余的小块。两边领取互不重叠的范围，共用一份进度记录，方便中断后继续。
 
-**GPU 少算了什么？** 原来循环每走一步，都要重新计算下一份数据从哪里取。访问顺序其实会周期性重复，把循环按固定周期整理后，编译器就可以提前排好一组内的访问顺序，减少运行时重复算位置的开销。每个候选都要走这段循环，单次省下的工作累积起来，就能影响整体吞吐。
+循环会反复读取一组数据，并用读到的值更新状态。原来每走一步都要现算读取位置。访问顺序会周期性重复，把循环按固定周期整理后，编译器可以提前排好组内的访问顺序，减少运行时重复算位置的开销。
 
-同一轮还把 CPU 并发从 14 调到 4，重新平衡 CPU 和 GPU 的分工。下面是同一台机器、同一扫描范围的复测结果，命中结果一致。**约 22.5% 是两项改动的合计提升**，测试没有分别测量各自的贡献。
-
-<figure class="gpu-benchmark">
-  <figcaption><strong>吞吐对比</strong> <span>亿候选值/秒</span></figcaption>
-  <div class="gpu-benchmark-row">
-    <span>优化前</span><strong>5.52</strong>
-    <div class="gpu-benchmark-track" aria-hidden="true"><div class="gpu-benchmark-bar" style="width: 78.86%"></div></div>
+<figure class="gpu-computation">
+  <figcaption><strong>同一组输入，优化的是哪一步？</strong></figcaption>
+  <div class="gpu-computation-input">
+    <span>示例输入</span>
+    <span class="gpu-computation-value">8</span>
+    <span class="gpu-computation-value">3</span>
+    <span class="gpu-computation-value">5</span>
   </div>
-  <div class="gpu-benchmark-row">
-    <span>两项一起优化后</span><strong>6.76</strong>
-    <div class="gpu-benchmark-track" aria-hidden="true"><div class="gpu-benchmark-bar gpu-benchmark-bar-after" style="width: 96.57%"></div></div>
+  <div class="gpu-computation-path">
+    <strong>优化前 · 每一步</strong>
+    <div class="gpu-computation-steps">
+      <span class="gpu-computation-before">现算读取位置</span>
+      <span>读取数据</span>
+      <span>更新状态</span>
+    </div>
   </div>
-  <div class="gpu-benchmark-scale" aria-hidden="true"><span>0</span><span>7</span></div>
+  <div class="gpu-computation-path">
+    <strong>优化后 · 按固定周期</strong>
+    <div class="gpu-computation-steps">
+      <span class="gpu-computation-after">提前排好位置</span>
+      <span>读取数据</span>
+      <span>更新状态</span>
+    </div>
+  </div>
+  <small>两条路径都按 8 → 3 → 5 的顺序循环读取，状态更新的顺序相同。数字仅用于演示。</small>
 </figure>
+
+同一轮还把 CPU 并发从 14 调到 4，重新平衡 CPU 和 GPU 的分工。同一台机器、同一扫描范围下，吞吐从每秒 5.52 亿提高到 6.76 亿候选值，命中结果一致。**约 22.5% 是两项改动的合计提升**，测试没有分别测量各自的贡献。
 
 ## 全片解码验收
 

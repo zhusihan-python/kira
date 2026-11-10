@@ -900,7 +900,7 @@ h3 {
   cursor: default;
 }
 
-.gpu-benchmark {
+.gpu-computation {
   margin: 1.5rem 0;
   padding: 0.85rem;
   border: 1px solid var(--line);
@@ -908,43 +908,58 @@ h3 {
   background: var(--paper-soft);
 }
 
-.gpu-benchmark figcaption,
-.gpu-benchmark-scale {
-  color: var(--ink-soft);
+.gpu-computation-input {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-block: 0.65rem;
   font-size: 0.85rem;
 }
 
-.gpu-benchmark figcaption strong {
-  margin-inline-end: 0.4rem;
-  color: var(--ink);
+.gpu-computation-value {
+  min-width: 1.8rem;
+  padding: 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  background: var(--paper);
+  text-align: center;
 }
 
-.gpu-benchmark-row {
+.gpu-computation-path + .gpu-computation-path {
+  margin-top: 0.7rem;
+}
+
+.gpu-computation-steps {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.25rem 0.5rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+
+.gpu-computation-steps span {
+  padding: 0.35rem 0.15rem;
+  border: 1px solid var(--line);
+  border-radius: 0.25rem;
+  background: var(--paper);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.gpu-computation-steps .gpu-computation-before {
+  border-color: #a16c3b;
+  background: #f8e8d8;
+}
+
+.gpu-computation-steps .gpu-computation-after {
+  border-color: var(--accent-deep);
+  background: var(--accent-wash);
+}
+
+.gpu-computation small {
+  display: block;
   margin-top: 0.65rem;
-}
-
-.gpu-benchmark-track {
-  grid-column: 1 / -1;
-  height: 0.7rem;
-  background: var(--line);
-}
-
-.gpu-benchmark-bar {
-  height: 100%;
-  background: var(--ink-soft);
-}
-
-.gpu-benchmark-bar-after {
-  background: var(--accent-deep);
-}
-
-.gpu-benchmark-scale {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0.2rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
 }
 
 .toc {
